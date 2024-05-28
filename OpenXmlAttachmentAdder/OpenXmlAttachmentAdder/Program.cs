@@ -16,28 +16,13 @@ using (var stream = contentTypes!.Open())
     xml.Load(stream);
 
 var document = xml.DocumentElement;
-var oxaNodes = new List<XmlNode>();
-foreach (XmlNode node in document!.ChildNodes)
-{
-    if (node.Name is not "Override")
-        continue;
-    var partName = node.Attributes?["PartName"];
-    if (partName is null)
-        continue;
-
-    if (partName.Value.StartsWith("/oxa/"))
-        oxaNodes.Add(node);
-}
-foreach(var node in oxaNodes)
-    _ = document.RemoveChild(node);
-
 foreach (var attachment in attachments.EnumerateFiles("*", SearchOption.AllDirectories))
 {
     var path = Path.GetRelativePath(attachments.FullName, attachment.FullName);
     path = Path.Join("oxa", path);
     path = path.Replace('\\', '/');
 
-    var element = xml.CreateElement("Override", document.NamespaceURI);
+    var element = xml.CreateElement("Override", document!.NamespaceURI);
     element.SetAttribute("PartName", $"/{path}");
     element.SetAttribute("ContentType", "application/octet-stream");
     _ = document.AppendChild(element);
